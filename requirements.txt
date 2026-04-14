@@ -6,7 +6,10 @@ django-stubs==5.2.5
 django-stubs-ext==5.2.5
 djangorestframework==3.16.1
 djangorestframework_simplejwt==5.5.1
+gunicorn==25.3.0
 idna==3.11
+packaging==26.0
+psycopg2-binary==2.9.11
 PyJWT==2.10.1
 python-decouple==3.8
 requests==2.32.5

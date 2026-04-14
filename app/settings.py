@@ -28,8 +28,12 @@ SECRET_KEY = config("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'meu_projeto.com', 'www.meu_projeto.com']
 
+# Confie nos cabeçalhos que o Nginx está enviando
+# (Evita problemas de CSRF e HTTPS falso)
+USE_X_FORWARDED_HOST = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Application definition
 
@@ -94,9 +98,9 @@ DATABASES = {
         # Define o adaptador oficial do Django para Postgres
         "ENGINE": "django.db.backends.postgresql",
         # Recupera o valor do .env. Se não achar, lança erro (segurança por padrão)
-        "NAME": config("DB_NAME"),
-        "USER": config("DB_USER"),
-        "PASSWORD": config("DB_PASSWORD"),
+        "NAME": config("POSTGRES_DB"),
+        "USER": config("POSTGRES_USER"),
+        "PASSWORD": config("POSTGRES_PASSWORD"),
         "HOST": config("DB_HOST"),
         # default='5432' garante que se a variável não existir, usa a porta padrão
         "PORT": config("DB_PORT", default="5432"),
@@ -104,6 +108,10 @@ DATABASES = {
         # Mantém a conexão viva por 60 segundos para reutilização em novas requisições.
         # Reduz o overhead de "Handshake TCP" e autenticação a cada request.
         "CONN_MAX_AGE": 60,
+        # Garante que toda requisição HTTP seja envolvida em uma transação de
+        # banco de dados. Se ocorrer um erro (excepção) na view, o Django faz
+        # ROLLBACK automático. Se der tudo certo, faz COMMIT.
+        "ATOMIC_REQUESTS": True,
         # OPÇÕES ESPECÍFICAS DO DRIVER (psycopg)
         "OPTIONS": {
             # Timeout de Conexão (segundos):
@@ -113,10 +121,6 @@ DATABASES = {
             # (Adicional Recomendado) Schema search path
             # Define onde o Postgres busca tabelas se não especificar o schema.
             "options": "-c search_path=public,app_schema",
-            # Garante que toda requisição HTTP seja envolvida em uma transação de
-            # banco de dados. Se ocorrer um erro (excepção) na view, o Django faz
-            # ROLLBACK automático. Se der tudo certo, faz COMMIT.
-            "ATOMIC_REQUESTS": True,
         },
     },
 }
@@ -163,7 +167,10 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
