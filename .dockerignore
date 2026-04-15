@@ -24,7 +24,7 @@ wheels/
 
 # --- Ambientes Virtuais (Essencial ignorar) ---
 
-O venv local não roda no Linux do Docker (e vice-versa)
+# O venv local não roda no Linux do Docker (e vice-versa)
 
 venv/
 .venv/
@@ -33,26 +33,26 @@ env/
 
 # --- Django ---
 
-Ignora o banco de dados local (geralmente queremos um banco novo ou conectado externamente)
+# Ignora o banco de dados local (geralmente queremos um banco novo ou conectado externamente)
 
 *.sqlite3
 db.sqlite3
 
-Mídia enviada pelo usuário (geralmente fica em volume, não na imagem)
+# Mídia enviada pelo usuário (geralmente fica em volume, não na imagem)
 
 media/
 
-Arquivos estáticos coletados localmente (deixe o Docker rodar o collectstatic)
+# Arquivos estáticos coletados localmente (deixe o Docker rodar o collectstatic)
 
 staticfiles/
 
-Logs locais
+# Logs locais
 
 *.log
 
 # --- Variáveis de Ambiente e Segredos (CRÍTICO) ---
 
-Nunca copie suas chaves secretas para dentro da imagem
+# Nunca copie suas chaves secretas para dentro da imagem
 
 .env
 .env.local
@@ -74,10 +74,10 @@ Nunca copie suas chaves secretas para dentro da imagem
 
 # --- Docker ---
 
-Não precisamos copiar o próprio Dockerfile ou configs do compose para dentro
+# Não precisamos copiar o próprio Dockerfile ou configs do compose para dentro
 
 Dockerfile*
-# docker-compose*
+docker-compose*
 .dockerignore
 
 # --- Testes e Cobertura ---
