@@ -1,10 +1,10 @@
---- Python ---
+# --- Python ---
 
 pycache/
 *.py[cod]
 *$py.class
 
---- Distribuição / Instalação ---
+# --- Distribuição / Instalação ---
 
 build/
 develop-eggs/
@@ -22,7 +22,7 @@ wheels/
 .installed.cfg
 *.egg
 
---- Ambientes Virtuais (Essencial ignorar) ---
+# --- Ambientes Virtuais (Essencial ignorar) ---
 
 O venv local não roda no Linux do Docker (e vice-versa)
 
@@ -31,7 +31,7 @@ venv/
 env/
 .env_dir/
 
---- Django ---
+# --- Django ---
 
 Ignora o banco de dados local (geralmente queremos um banco novo ou conectado externamente)
 
@@ -50,7 +50,7 @@ Logs locais
 
 *.log
 
---- Variáveis de Ambiente e Segredos (CRÍTICO) ---
+# --- Variáveis de Ambiente e Segredos (CRÍTICO) ---
 
 Nunca copie suas chaves secretas para dentro da imagem
 
@@ -58,13 +58,13 @@ Nunca copie suas chaves secretas para dentro da imagem
 .env.local
 .env.*
 
---- Git ---
+# --- Git ---
 
 .git/
 .gitignore
 .gitattributes
 
---- IDEs e Editores ---
+# --- IDEs e Editores ---
 
 .idea/
 .vscode/
@@ -72,7 +72,7 @@ Nunca copie suas chaves secretas para dentro da imagem
 *.swo
 .DS_Store
 
---- Docker ---
+# --- Docker ---
 
 Não precisamos copiar o próprio Dockerfile ou configs do compose para dentro
 
@@ -80,7 +80,7 @@ Dockerfile*
 docker-compose*
 .dockerignore
 
---- Testes e Cobertura ---
+# --- Testes e Cobertura ---
 
 .coverage
 htmlcov/
