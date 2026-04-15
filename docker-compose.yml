@@ -1,0 +1,196 @@
+# ==============================================================================
+# ✏️ NOME DO PROJETO
+# A tag "name" define o nome global do projeto. O Docker usará esse nome como 
+# prefixo para todos os containers, volumes e redes criados.
+# ==============================================================================
+name: SGE_ESTUDOS_INFRA
+
+# ==============================================================================
+# ⚙️ SERVIÇOS DA NOSSA APLICAÇÃO
+# Na tag estrutural "services" você vai definir todos os "membros" que compõem 
+# a sua orquestração.
+# ==============================================================================
+services:
+
+  # 🗃️ BANCO DE DADOS (POSTGRESQL)
+  # Esse trecho "sge_db" define o início da configuração de um serviço. 
+  # Você pode dar o nome que quiser.
+  sge_db:
+    # A tag "image" indica qual imagem base, já pronta no Docker Hub, será usada.
+    image: postgres:15-alpine
+    
+    # A tag "container_name" força a atribuição de um nome específico e amigável 
+    # para o container em execução.
+    container_name: SGE_DATABASE
+
+    # A tag "env_file" instrui o Docker Compose a ler um arquivo externo.
+    env_file:
+      # "- .env" indica o caminho e o nome do arquivo que contém as variáveis a serem lidas.
+      - .env
+
+    # A tag "environment" permite definir variáveis de ambiente explicitamente.
+    environment:
+      # "POSTGRES_USER" é a subtag/chave esperada pela imagem do Postgres. 
+      # "${POSTGRES_USER}" é o valor que o Compose vai injetar lendo do seu .env.
+      POSTGRES_USER: ${POSTGRES_USER}
+      # "POSTGRES_PASSWORD" define a senha do banco usando interpolação.
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      # "POSTGRES_DB" define o nome do banco de dados inicial a ser criado.
+      POSTGRES_DB: ${POSTGRES_DB}
+
+    # A tag "volumes" no escopo do serviço mapeia armazenamento para o container.
+    volumes:
+      # "postgres_data:/var/lib/postgresql/data/" usa a sintaxe 'volume_nomeado:caminho_interno'.
+      # Mapeia o volume global 'postgres_data' para a pasta onde o Postgres salva os dados.
+      - postgres_data:/var/lib/postgresql/data/
+
+    # A tag "networks" define a quais redes este container estará conectado.
+    networks:
+      # "- sge_network" indica o nome exato da rede (definida lá embaixo) que ele vai usar.
+      - sge_network
+
+    # A tag "healthcheck" configura verificações de integridade customizadas.
+    healthcheck:
+      # "test" indica o comando exato que será executado dentro do container para verificar a saúde.
+      test: ["CMD-SHELL", "pg_isready -d ${POSTGRES_DB} -U ${POSTGRES_USER}"]
+      # "interval" indica o tempo de espera entre cada tentativa de verificação.
+      interval: 5s       
+      # "timeout" indica quanto tempo o Docker deve esperar o comando responder antes de considerar que falhou.
+      timeout: 5s        
+      # "retries" indica o número máximo de falhas consecutivas aceitas antes de marcar o container como "unhealthy" (doente).
+      retries: 5         
+      # "start_period" fornece um tempo de "imunidade" inicial para o container terminar de ligar antes de começar a contar falhas.
+      start_period: 5s   
+
+    # A tag "restart" define a política de reinicialização. "on-failure:5" fará 
+    # com que o Docker reinicie o container se ele parar devido a um erro, até 5 vezes.
+    restart: on-failure:5
+
+    # A tag "labels" adiciona metadados informativos ao container.
+    labels:
+      # Cada linha abaixo é um par de "chave=valor" usado para documentação e ferramentas de terceiros.
+      - "br.com.lpdev.sge.version=1.0"
+      - "br.com.lpdev.sge.author=Leonardo P Monteiro"
+      - "br.com.lpdev.sge.environment=development"
+      - "br.com.lpdev.sge.description=Banco de Dados PostgreSQL"
+
+  # 🖥️ SISTEMA DE GERENCIAMENTO DE ESTOQUE - INFRA
+  sge_web:
+    # A tag "container_name" força a atribuição de um nome específico e amigável para o container em execução.
+    container_name: SGE_WEB
+    
+    # A tag "user" substitui o usuário padrão. Define que os processos internos 
+    # devem ser executados pelo usuário "root". 
+    # Obs.: Não deixe ela descomentada, pois não é uma boa prática deixar o
+    # ambiente rodar como usuário root (é perigoso).
+    # user: root
+    
+    # A tag "build" é usada em substituição à tag "image". Ela diz ao Docker 
+    # para construir uma nova imagem a partir de um Dockerfile local.
+    build:
+      # "context" indica o local onde os arquivos estão. O "." indica a pasta atual (mesmo local do yaml).
+      context: .
+      # "dockerfile" indica o nome exato do arquivo que contém as instruções de build.
+      dockerfile: Dockerfile
+
+    # A tag "command" sobrescreve o comando padrão (CMD) definido no Dockerfile original.
+    command: >
+      sh -c "python manage.py migrate && 
+             python manage.py collectstatic --noinput && 
+             python create_superuser.py &&
+             gunicorn app.wsgi:application -c gunicorn_conf.py"
+
+    # A tag "volumes" no escopo do serviço mapeia armazenamento para o container.
+    volumes:
+      # ".:/SGE_INFRA" mapeia a sua pasta local inteira para dentro do container (Bind Mount).
+      - .:/SGE_INFRA
+      # "static_volume:/SGE_INFRA/staticfiles" mapeia a pasta interna de estáticos do Django para um volume nomeado.
+      - static_volume:/SGE_INFRA/staticfiles 
+
+    # A tag "env_file" instrui o Docker Compose a ler um arquivo externo.
+    env_file:
+      # "- .env" indica o caminho e o nome do arquivo que contém as variáveis a serem lidas.
+      - .env
+
+    # A tag "networks" define a quais redes este container estará conectado.
+    networks:
+      # "- sge_network" indica o nome exato da rede (definida lá embaixo) que ele vai usar.
+      - sge_network
+
+    # A tag "depends_on" controla a ordem de inicialização entre os containers.
+    # Usando a sintaxe estendida (condition), ela bloqueia o início deste serviço
+    # até que o healthcheck do serviço alvo retorne positivo.
+    depends_on:
+      # "sge_db" indica qual o serviço alvo que este container deve esperar.
+      sge_db:
+        # "condition" indica qual a condição a ser aguardada do alvo (neste caso, estar "saudável").
+        condition: service_healthy 
+
+    # A tag "labels" adiciona metadados informativos ao container.
+    labels:
+      # Cada linha abaixo é um par de "chave=valor" usado para documentação e ferramentas de terceiros.
+      - "br.com.lpdev.sge.version=1.0"
+      - "br.com.lpdev.sge.author=Leonardo P Monteiro"
+      - "br.com.lpdev.sge.environment=development"
+      - "br.com.lpdev.sge.description=Sistema de Gerenciamento de Estoque"
+
+    # A tag "restart" define a política de reinicialização. "on-failure:5" fará 
+    # com que o Docker reinicie o container se ele parar devido a um erro, até 5 vezes.
+    restart: on-failure:5
+
+  # 🛡️ SERVIDOR WEB (NGINX)
+  nginx:
+    # A tag "image" indica qual imagem base, já pronta no Docker Hub, será usada.
+    image: nginx:1.29-alpine
+    
+    # A tag "container_name" força a atribuição de um nome específico e amigável para o container em execução.
+    container_name: SGE_NGINX
+    
+    # A tag "ports" publica portas do container para o hospedeiro (seu computador).
+    ports:
+      # '"80:80"' indica "porta_no_seu_computador : porta_dentro_do_container".
+      - "80:80"
+      
+    # A tag "volumes" no escopo do serviço mapeia armazenamento para o container.
+    volumes:
+      # "./nginx/nginx.conf:/etc/nginx/conf.d/default.conf" mapeia especificamente o arquivo de configuração local substituindo o padrão do Nginx.
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+      # "static_volume:/SGE_INFRA/staticfiles" acopla o mesmo volume do Django para o Nginx poder ler os arquivos CSS/JS.
+      - static_volume:/SGE_INFRA/staticfiles 
+      
+    # A tag "depends_on" controla a ordem de inicialização entre os containers.
+    depends_on:
+      # "- sge_web" diz que o Nginx deve esperar o container SGE_WEB ser criado antes de iniciar.
+      - sge_web
+      
+    # A tag "networks" define a quais redes este container estará conectado.
+    networks:
+      # "- sge_network" indica o nome exato da rede (definida lá embaixo) que ele vai usar.
+      - sge_network
+      
+    # A tag "labels" adiciona metadados informativos ao container.
+    labels:
+      # Cada linha abaixo é um par de "chave=valor" usado para documentação e ferramentas de terceiros.
+      - "br.com.lpdev.sge.version=1.0"
+      - "br.com.lpdev.sge.author=Leonardo P Monteiro"
+      - "br.com.lpdev.sge.environment=development"
+      - "br.com.lpdev.sge.description=Nginx do nosso projeto de SGE - Infra"
+
+# ==============================================================================
+# 🌎 DEFINIÇÃO DE RECURSOS GLOBAIS
+# ==============================================================================
+
+# A tag estrutural global "volumes" declara volumes nomeados que podem ser 
+# referenciados por múltiplos serviços (como sge_web e nginx compartilhando estáticos).
+volumes:
+  # "postgres_data" declara a existência do volume para o banco. Ficará salvo no Docker local.
+  postgres_data:
+  # "static_volume" declara o volume que servirá de ponte para arquivos estáticos.
+  static_volume:
+
+# A tag estrutural global "networks" cria redes virtuais isoladas.
+networks:
+  # "sge_network" é o nome da rede que você está criando para este projeto.
+  sge_network:
+    # A subtag "driver" especifica o tipo de tecnologia da rede. "bridge" cria uma ponte de rede interna e isolada, que é o padrão do Docker.
+    driver: bridge
