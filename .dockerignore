@@ -77,7 +77,7 @@ Nunca copie suas chaves secretas para dentro da imagem
 Não precisamos copiar o próprio Dockerfile ou configs do compose para dentro
 
 Dockerfile*
-docker-compose*
+# docker-compose*
 .dockerignore
 
 # --- Testes e Cobertura ---
