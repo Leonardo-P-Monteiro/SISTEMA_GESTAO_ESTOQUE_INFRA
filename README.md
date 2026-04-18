@@ -129,7 +129,7 @@ Exemplo de GIF:
 ![Tela Whatsapp](screenshots/screen-9.jpg)
 
 
-## Instalação e execução
+## Instalação e execução (Local/Manual)
 1. Criar e ativar ambiente virtual.
 2. Instalar dependências:
 
@@ -157,6 +157,28 @@ python manage.py runserver
 ```
 
 6. Acesse a interface web em `http://127.0.0.1:8000/`.
+
+## Execução via Docker (Recomendado)
+O projeto está configurado para rodar com **Docker** e **Docker Compose**, orquestrando o Banco de Dados (PostgreSQL), a Aplicação (Gunicorn) e o Servidor Web (Nginx).
+
+1. Certifique-se de ter o **Docker** e o **Docker Compose** instalados em sua máquina.
+2. No arquivo `.env`, além das chaves de integração, configure as credenciais do banco para o Docker:
+    ```env
+    POSTGRES_USER=seu_usuario
+    POSTGRES_PASSWORD=sua_senha
+    POSTGRES_DB=sge_db
+    ```
+3. Execute o comando para construir e subir os containers:
+    ```bash
+    docker-compose up --build
+    ```
+4. O processo automatiza:
+    - Aplicação de Migrations.
+    - Coleta de arquivos estáticos.
+    - Criação do superusuário padrão (`admin`/`admin`).
+    - Proxy reverso via Nginx na porta 80.
+
+5. Acesse o sistema em: `http://localhost/`.
 
 ## Como testar a API com JWT (exemplos curl)
 1. Solicitar token:
