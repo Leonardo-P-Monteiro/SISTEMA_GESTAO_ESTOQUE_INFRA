@@ -104,6 +104,9 @@ services:
     volumes:
       # ".:/SGE_INFRA" mapeia a sua pasta local inteira para dentro do container (Bind Mount).
       - .:/SGE_INFRA
+      # BLOQUEIO DE SEGURANÇA: Impede que a pasta oculta .venv do seu Windows 
+      # sobrescreva o ambiente virtual (.venv) interno do Linux.
+      - /SGE_INFRA/.venv
       # "static_volume:/SGE_INFRA/staticfiles" mapeia a pasta interna de estáticos do Django para um volume nomeado.
       - static_volume:/SGE_INFRA/staticfiles 
 

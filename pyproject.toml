@@ -1,0 +1,78 @@
+# ==============================================================================
+# 📦 CONFIGURAÇÃO PRINCIPAL DO PROJETO
+# A seção "[project]" é o coração do pyproject.toml (PEP 621). 
+# Ela define os metadados do seu projeto de forma padronizada.
+# É aqui que o uv busca as informações primárias para criar o ambiente.
+# ==============================================================================
+[project]
+
+# "name" define o nome do projeto.
+# O uv utiliza esse nome para identificar a raiz do projeto.
+name = "sistema-gestao-estoque-infra"
+
+# "version" é a versão atual do seu projeto.
+version = "0.1.0"
+
+# "description" é um resumo sobre o que o projeto faz.
+description = "Projeto Django para gerenciamento de estoque com funcionalidades completas para produtos, categorias, marcas, fornecedores, entradas (inflows) e saídas (outflows)."
+
+# "readme" aponta para o arquivo de documentação principal.
+readme = "README.md"
+
+# "requires-python" estabelece a versão mínima do interpretador Python suportada.
+# Fundamental: O uv lê isso para saber qual versão exata baixar ou linkar na criação da .venv.
+requires-python = ">=3.12"
+
+# ==============================================================================
+# 👥 METADADOS DE AUTORIA E RESPONSABILIDADE
+# ==============================================================================
+authors = [
+    {name='Leonardo P Monteiro', email='email@email.com'}
+]
+
+maintainers = [
+    { name = "Equipe de Infraestrutura", email = "infra@exemplo.com" }
+]
+
+# ==============================================================================
+# 📄 LICENÇA
+# ==============================================================================
+license = {text = "Proprietária - Uso Interno"}
+
+# ==============================================================================
+# 📚 DEPENDÊNCIAS DE PRODUÇÃO
+# Esta é a lista oficial de bibliotecas estritamente necessárias para a aplicação RODAR.
+# Substitui o "requirements.txt" tradicional. 
+# Quando você digita "uv sync", ele lê esta lista e atualiza o arquivo uv.lock.
+# ==============================================================================
+dependencies = [
+    "asgiref==3.9.2",
+    "certifi==2025.11.12",
+    "charset-normalizer==3.4.4",
+    "django==5.2.7",
+    "django-stubs==5.2.5",
+    "django-stubs-ext==5.2.5",
+    "djangorestframework==3.16.1",
+    "djangorestframework-simplejwt==5.5.1",
+    "gunicorn==25.3.0",
+    "idna==3.11",
+    "packaging==26.0",
+    "psycopg2-binary==2.9.11",
+    "pyjwt==2.10.1",
+    "python-decouple==3.8",
+    "requests==2.32.5",
+    "sqlparse==0.5.3",
+    "types-pyyaml==6.0.12.20250915",
+    "typing-extensions==4.15.0",
+    "tzdata==2025.2",
+    "urllib3==2.6.1",
+]
+
+# ==============================================================================
+# 🛠️ DEPENDÊNCIAS DE DESENVOLVIMENTO (DEPENDENCY GROUPS)
+# Aqui entram ferramentas usadas APENAS enquanto você programa.
+# Elas NÃO vão para produção. No Dockerfile otimizado, ignoramos este grupo 
+# rodando "uv sync --no-dev".
+# ==============================================================================
+[dependency-groups]
+dev = []
